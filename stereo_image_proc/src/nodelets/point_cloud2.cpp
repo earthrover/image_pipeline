@@ -107,6 +107,12 @@ void PointCloud2Nodelet::onInit()
     approximate_sync_.reset( new ApproximateSync(ApproximatePolicy(queue_size),
                                                  sub_l_image_, sub_l_info_,
                                                  sub_r_info_, sub_disparity_) );
+
+#if !defined(MESSAGE_FILTERS_SYNC_APPROXIMATE_TIME_HAS_NON_OPTIMAL_OPTION)
+#warning "message_filters/sync_policies/approximate_time.h does not have the required allow_non_optimal_candidates option, use the Earth Rover version instead"
+#else
+    approximate_sync_->setAllowNonOptimalCandidates(private_nh.param("allow_non_optimal_candidates", false));
+#endif
     approximate_sync_->registerCallback(boost::bind(&PointCloud2Nodelet::imageCb,
                                                     this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
   }
