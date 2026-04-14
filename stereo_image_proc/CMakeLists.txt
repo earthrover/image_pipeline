@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(stereo_image_proc)
 
-find_package(catkin REQUIRED cv_bridge dynamic_reconfigure image_geometry image_proc image_transport message_filters nodelet sensor_msgs stereo_msgs)
+find_package(catkin REQUIRED cv_bridge dynamic_reconfigure image_geometry image_proc image_transport message_filters nodelet sensor_msgs stereo_msgs earth_rover_tracing)
 find_package(Boost REQUIRED COMPONENTS thread)
 
 # Dynamic reconfigure support
 generate_dynamic_reconfigure_options(cfg/Disparity.cfg)
 
 catkin_package(
-  CATKIN_DEPENDS image_geometry image_proc sensor_msgs stereo_msgs
+  CATKIN_DEPENDS image_geometry image_proc sensor_msgs stereo_msgs earth_rover_tracing
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
 )

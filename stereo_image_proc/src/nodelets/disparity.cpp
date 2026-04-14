@@ -57,6 +57,10 @@
 
 #include <stereo_image_proc/processor.h>
 
+#include "earth_rover_tracing/trace.h"
+#include "earth_rover_tracing/trace_macros.h"
+#include "earth_rover_tracing/trace_nodelet.h"
+
 namespace stereo_image_proc {
 
 using namespace sensor_msgs;
@@ -79,6 +83,8 @@ class DisparityNodelet : public nodelet::Nodelet
   // Publications
   boost::mutex connect_mutex_;
   ros::Publisher pub_disparity_;
+
+  earth_rover::tracing::Context trace_ctx;
 
   // Dynamic reconfigure
   boost::recursive_mutex config_mutex_;
@@ -103,6 +109,7 @@ class DisparityNodelet : public nodelet::Nodelet
 
 void DisparityNodelet::onInit()
 {
+  trace_ctx = CREATE_NODELET_TRACE_CONTEXT();
   ros::NodeHandle &nh = getNodeHandle();
   ros::NodeHandle &private_nh = getPrivateNodeHandle();
 
@@ -234,6 +241,7 @@ void DisparityNodelet::imageCb(const ImageConstPtr& l_image_msg,
                                const ImageConstPtr& r_image_msg,
                                const CameraInfoConstPtr& r_info_msg)
 {
+  TRACE_SCOPE(trace_ctx, "Disparity cb");
   // Update the camera model
   model_.fromCameraInfo(l_info_msg, r_info_msg);
 
@@ -264,6 +272,7 @@ void DisparityNodelet::imageCb(const ImageConstPtr& l_image_msg,
   cv::Mat_<uint8_t> r_sub_image;
 
   if (downsampling_factor_ != 1) {
+    TRACE_SCOPE(trace_ctx, "Subsampling");
     l_sub_image = subsampleTheImage(l_image, downsampling_factor_);
     r_sub_image = subsampleTheImage(r_image, downsampling_factor_);
   } else {
@@ -271,11 +280,16 @@ void DisparityNodelet::imageCb(const ImageConstPtr& l_image_msg,
     r_sub_image = r_image;
   }
 
-  // Perform block matching to find the disparities
-  block_matcher_.processDisparity(l_sub_image, r_sub_image, model_, *disp_msg);
+
+  {
+    TRACE_SCOPE(trace_ctx, "block matching");
+    // Perform block matching to find the disparities
+    block_matcher_.processDisparity(l_sub_image, r_sub_image, model_, *disp_msg);
+  }
 
   // Upsampling
   if (downsampling_factor_ != 1) {
+    TRACE_SCOPE(trace_ctx, "Upsampling");
     const cv::Mat disp_subsampled_image =
         cv_bridge::toCvShare(
             disp_msg->image, disp_msg, sensor_msgs::image_encodings::TYPE_32FC1)
@@ -293,6 +307,7 @@ void DisparityNodelet::imageCb(const ImageConstPtr& l_image_msg,
   double cx_l = model_.left().cx();
   double cx_r = model_.right().cx();
   if (cx_l != cx_r) {
+    TRACE_SCOPE(trace_ctx, "Adjust principal points offset");
     cv::Mat_<float> disp_image(disp_msg->image.height, disp_msg->image.width,
                               reinterpret_cast<float*>(&disp_msg->image.data[0]),
                               disp_msg->image.step);
