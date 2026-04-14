@@ -8,7 +8,7 @@ find_package(Boost REQUIRED COMPONENTS thread)
 generate_dynamic_reconfigure_options(cfg/Disparity.cfg)
 
 catkin_package(
-  CATKIN_DEPENDS image_geometry image_proc sensor_msgs stereo_msgs earth_rover_tracing
+  CATKIN_DEPENDS image_geometry image_proc sensor_msgs stereo_msgs
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
 )
