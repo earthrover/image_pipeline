@@ -113,6 +113,12 @@ void PointCloud2Nodelet::onInit()
 #else
     approximate_sync_->setAllowNonOptimalCandidates(private_nh.param("allow_non_optimal_candidates", false));
 #endif
+
+    if (getPrivateNodeHandle().hasParam("max_sync_interval_seconds")) {
+        const double max_sync_interval_seconds = getPrivateNodeHandle().param<double>("max_sync_interval_seconds", 0);
+        approximate_sync_->setMaxIntervalDuration(ros::Duration(max_sync_interval_seconds));
+    }
+
     approximate_sync_->registerCallback(boost::bind(&PointCloud2Nodelet::imageCb,
                                                     this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
   }
