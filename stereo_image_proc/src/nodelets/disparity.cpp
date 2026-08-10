@@ -346,7 +346,7 @@ void DisparityNodelet::configCb(Config &config, uint32_t level)
   }
   else if (config.stereo_algorithm == stereo_image_proc::Disparity_StereoSGBM) { // StereoSGBM
     block_matcher_.setStereoType(StereoProcessor::SGBM);
-    block_matcher_.setSgbmMode(config.fullDP);
+    block_matcher_.setSgbmMode(config.sgbm_mode);
     block_matcher_.setP1(config.P1);
     block_matcher_.setP2(config.P2);
     block_matcher_.setDisp12MaxDiff(config.disp12MaxDiff);
